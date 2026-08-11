@@ -29,17 +29,18 @@ def patch_apk():
     output_apk_name = f"patched_{apk_file.filename}"
     output_apk_path = os.path.join(OUTPUT_FOLDER, output_apk_name)
     
+    target_dll_name = os.path.basename(dll_path).lower()
+    
     try:
+        dll_replaced = False
         with zipfile.ZipFile(apk_path, 'r') as zin:
-            with zipfile.ZipFile(output_apk_path, 'w') as zout:
-                dll_replaced = False
+            with zipfile.ZipFile(output_apk_path, 'w', zipfile.ZIP_DEFLATED) as zout:
                 for item in zin.infolist():
                     buffer = zin.read(item.filename)
-                    if 'assets/bin/Data/Managed/' in item.filename and item.filename.endswith('.dll'):
-                        if os.path.basename(item.filename).lower() == os.path.basename(dll_path).lower():
-                            with open(dll_path, 'rb') as f_dll:
-                                buffer = f_dll.read()
-                            dll_replaced = True
+                    if item.filename.endswith('.dll') and os.path.basename(item.filename).lower() == target_dll_name:
+                        with open(dll_path, 'rb') as f_dll:
+                            buffer = f_dll.read()
+                        dll_replaced = True
                     zout.writestr(item, buffer)
                 
                 if not dll_replaced:
@@ -70,7 +71,6 @@ def extract_ids():
                         data = zin.read(item.filename)
                         text_content = data.decode('latin-1', errors='ignore')
                         
-                        # Match real keys associated with configuration text
                         pf_contexts = re.findall(r'(?:TitleId|titleId|PlayFab)["\s:=]+([A-Z0-9]{4,6})', text_content)
                         for match in pf_contexts:
                             if match not in ["", "None", "True", "False"]:
