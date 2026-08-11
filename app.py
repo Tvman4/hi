@@ -4,9 +4,7 @@ import re
 from flask import Flask, render_template, request, jsonify, send_file
 
 app = Flask(__name__)
-
-# Allow file uploads up to 800MB
-app.config['MAX_CONTENT_LENGTH'] = 800 * 1024 * 1024 
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024  # 1GB limit
 
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
@@ -28,7 +26,15 @@ def patch_apk():
         
         apk_path = os.path.join(UPLOAD_FOLDER, apk_file.filename)
         dll_path = os.path.join(UPLOAD_FOLDER, dll_file.filename)
-        apk_file.save(apk_path)
+        
+        # Stream save to prevent RAM spikes
+        with open(apk_path, 'wb') as f:
+            while True:
+                chunk = apk_file.stream.read(1024 * 1024)
+                if not chunk:
+                    break
+                f.write(chunk)
+                
         dll_file.save(dll_path)
         
         output_apk_name = f"patched_{apk_file.filename}"
@@ -63,7 +69,13 @@ def extract_ids():
         
         apk_file = request.files['apk']
         apk_path = os.path.join(UPLOAD_FOLDER, apk_file.filename)
-        apk_file.save(apk_path)
+        
+        with open(apk_path, 'wb') as f:
+            while True:
+                chunk = apk_file.stream.read(1024 * 1024)
+                if not chunk:
+                    break
+                f.write(chunk)
         
         playfab_ids = set()
         photon_ids = set()
