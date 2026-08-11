@@ -4,6 +4,10 @@ import re
 from flask import Flask, render_template, request, jsonify, send_file
 
 app = Flask(__name__)
+
+# Allow file uploads up to 800MB
+app.config['MAX_CONTENT_LENGTH'] = 800 * 1024 * 1024 
+
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -15,24 +19,24 @@ def index():
 
 @app.route('/api/patch', methods=['POST'])
 def patch_apk():
-    if 'apk' not in request.files or 'dll' not in request.files:
-        return jsonify({'error': 'Missing APK or DLL file'}), 400
-    
-    apk_file = request.files['apk']
-    dll_file = request.files['dll']
-    
-    apk_path = os.path.join(UPLOAD_FOLDER, apk_file.filename)
-    dll_path = os.path.join(UPLOAD_FOLDER, dll_file.filename)
-    apk_file.save(apk_path)
-    dll_file.save(dll_path)
-    
-    output_apk_name = f"patched_{apk_file.filename}"
-    output_apk_path = os.path.join(OUTPUT_FOLDER, output_apk_name)
-    
-    target_dll_name = os.path.basename(dll_path).lower()
-    
     try:
+        if 'apk' not in request.files or 'dll' not in request.files:
+            return jsonify({'error': 'Missing APK or DLL file'}), 400
+        
+        apk_file = request.files['apk']
+        dll_file = request.files['dll']
+        
+        apk_path = os.path.join(UPLOAD_FOLDER, apk_file.filename)
+        dll_path = os.path.join(UPLOAD_FOLDER, dll_file.filename)
+        apk_file.save(apk_path)
+        dll_file.save(dll_path)
+        
+        output_apk_name = f"patched_{apk_file.filename}"
+        output_apk_path = os.path.join(OUTPUT_FOLDER, output_apk_name)
+        
+        target_dll_name = os.path.basename(dll_path).lower()
         dll_replaced = False
+        
         with zipfile.ZipFile(apk_path, 'r') as zin:
             with zipfile.ZipFile(output_apk_path, 'w', zipfile.ZIP_DEFLATED) as zout:
                 for item in zin.infolist():
@@ -53,17 +57,17 @@ def patch_apk():
 
 @app.route('/api/extract', methods=['POST'])
 def extract_ids():
-    if 'apk' not in request.files:
-        return jsonify({'error': 'Missing APK file'}), 400
-    
-    apk_file = request.files['apk']
-    apk_path = os.path.join(UPLOAD_FOLDER, apk_file.filename)
-    apk_file.save(apk_path)
-    
-    playfab_ids = set()
-    photon_ids = set()
-    
     try:
+        if 'apk' not in request.files:
+            return jsonify({'error': 'Missing APK file'}), 400
+        
+        apk_file = request.files['apk']
+        apk_path = os.path.join(UPLOAD_FOLDER, apk_file.filename)
+        apk_file.save(apk_path)
+        
+        playfab_ids = set()
+        photon_ids = set()
+        
         with zipfile.ZipFile(apk_path, 'r') as zin:
             for item in zin.infolist():
                 if item.filename.endswith(('.dll', '.json', '.bytes', '.asset')) or 'assets/bin/Data/' in item.filename:
@@ -79,19 +83,15 @@ def extract_ids():
                         pt_contexts = re.findall(r'(?:AppId|appId|Photon|Realtime|Voice)["\s:=]+([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})', text_content)
                         for match in pt_contexts:
                             photon_ids.add(match)
-                            
-                    except Exception:
+                    except:
                         continue
                         
-        pf_result = list(playfab_ids) if playfab_ids else ["No PlayFab Title ID detected."]
-        pt_result = list(photon_ids) if photon_ids else ["No Photon GUID found."]
-
         return jsonify({
             'success': True,
-            'playfab': pf_result,
-            'photon': pt_result
+            'playfab': list(playfab_ids) if playfab_ids else ["No PlayFab Title ID detected."],
+            'photon': list(photon_ids) if photon_ids else ["No Photon GUID found."]
         })
-    except Exception as e:
+        except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/download/<filename>')
