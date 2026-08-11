@@ -65,37 +65,31 @@ def extract_ids():
     try:
         with zipfile.ZipFile(apk_path, 'r') as zin:
             for item in zin.infolist():
-                # Target DLLs or asset metadata files where configuration data lives
                 if item.filename.endswith(('.dll', '.json', '.bytes', '.asset')) or 'assets/bin/Data/' in item.filename:
                     try:
                         data = zin.read(item.filename)
                         text_content = data.decode('latin-1', errors='ignore')
                         
-                        # 1. Search contextually for PlayFab Title ID (looking around keywords like TitleId or PlayFab)
-                        # PlayFab Title IDs are typically 4-6 uppercase hex/alphanumeric characters.
+                        # Match real keys associated with configuration text
                         pf_contexts = re.findall(r'(?:TitleId|titleId|PlayFab)["\s:=]+([A-Z0-9]{4,6})', text_content)
                         for match in pf_contexts:
                             if match not in ["", "None", "True", "False"]:
                                 playfab_ids.add(match)
                                 
-                        # 2. Search contextually for Photon App ID (GUID format near Photon keywords)
                         pt_contexts = re.findall(r'(?:AppId|appId|Photon|Realtime|Voice)["\s:=]+([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})', text_content)
                         for match in pt_contexts:
                             photon_ids.add(match)
                             
-                        # Fallback: If no strict contextual tag was hit, catch standard GUIDs in Photon settings files
-                        if "PhotonServerSettings" in item.filename or "photon" in item.filename.lower():
-                            generic_guids = re.findall(r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b', text_content)
-                            for g in generic_guids:
-                                photon_ids.add(g)
-                                
                     except Exception:
                         continue
                         
+        pf_result = list(playfab_ids) if playfab_ids else ["No PlayFab Title ID detected."]
+        pt_result = list(photon_ids) if photon_ids else ["No Photon GUID found."]
+
         return jsonify({
             'success': True,
-            'playfab': list(playfab_ids) if playfab_ids else ["No explicit PlayFab Title ID found via patterns."],
-            'photon': list(photon_ids) if photon_ids else ["No explicit Photon GUID found via patterns."]
+            'playfab': pf_result,
+            'photon': pt_result
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
