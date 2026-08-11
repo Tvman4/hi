@@ -91,7 +91,7 @@ def extract_ids():
             'playfab': list(playfab_ids) if playfab_ids else ["No PlayFab Title ID detected."],
             'photon': list(photon_ids) if photon_ids else ["No Photon GUID found."]
         })
-        except Exception as e:
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/download/<filename>')
