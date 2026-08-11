@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unity APK Modder & Extractor Tool</title>
+    <title>Unity APK Patcher & ID Extractor</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -16,266 +16,130 @@
             --tab-bg: #21262d;
             --tab-active: #161b22;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 650px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Tabs Header */
-        .tabs-header {
-            display: flex;
-            background-color: var(--tab-bg);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .tab-btn:hover {
-            color: var(--text-color);
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-
-        .tab-btn.active {
-            color: var(--text-color);
-            background-color: var(--tab-active);
-            border-bottom: 2px solid var(--accent-color);
-        }
-
-        /* Tab Content */
-        .tab-content {
-            display: none;
-            padding: 25px;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        h2 {
-            font-size: 18px;
-            margin-bottom: 8px;
-            color: var(--text-color);
-        }
-
-        p.description {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 6px;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .file-upload-label {
-            display: block;
-            padding: 12px;
-            background-color: var(--tab-bg);
-            border: 1px dashed var(--border-color);
-            border-radius: 6px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .file-upload-label:hover {
-            border-color: var(--accent-color);
-            color: var(--text-color);
-        }
-
-        .action-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 10px;
-        }
-
-        .action-btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        /* Output Logs / Results */
-        .output-box {
-            margin-top: 20px;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 150px;
-            overflow-y: auto;
-            color: var(--text-muted);
-            white-space: pre-wrap;
-        }
-
-        .output-box.success {
-            color: #3fb950;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { width: 100%; max-width: 650px; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        .tabs-header { display: flex; background-color: var(--tab-bg); border-bottom: 1px solid var(--border-color); }
+        .tab-btn { flex: 1; padding: 15px; background: none; border: none; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; }
+        .tab-btn.active { color: var(--text-color); background-color: var(--tab-active); border-bottom: 2px solid var(--accent-color); }
+        .tab-content { display: none; padding: 25px; }
+        .tab-content.active { display: block; }
+        h2 { font-size: 18px; margin-bottom: 8px; }
+        p.description { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+        input[type="file"] { display: none; }
+        .file-upload-label { display: block; padding: 12px; background-color: var(--tab-bg); border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+        .action-btn { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .action-btn:hover { background-color: var(--accent-hover); }
+        .output-box { margin-top: 20px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; max-height: 150px; overflow-y: auto; color: var(--text-muted); white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Tabs Header -->
     <div class="tabs-header">
         <button class="tab-btn active" onclick="switchTab(event, 'patcher-tab')">APK DLL Patcher</button>
         <button class="tab-btn" onclick="switchTab(event, 'extractor-tab')">ID Extractor</button>
     </div>
 
-    <!-- Tab 1: APK DLL Patcher -->
+    <!-- Tab 1: Patcher -->
     <div id="patcher-tab" class="tab-content active">
-        <h2>Unity APK DLL Patcher</h2>
-        <p class="description">Inject a modded assembly (.dll) into your Unity Android APK and sign the package.</p>
-        
+        <h2>Unity APK DLL Injector</h2>
+        <p class="description">Upload your APK and replacement DLL. The backend will inject it into the package structure.</p>
         <div class="form-group">
-            <label>Select Unity APK File</label>
-            <label for="apk-file" class="file-upload-label" id="apk-label">Choose APK...</label>
-            <input type="file" id="apk-file" accept=".apk" onchange="updateFileName('apk-file', 'apk-label')">
+            <label for="apk-file" class="file-upload-label" id="apk-label">Choose APK File...</label>
+            <input type="file" id="apk-file" accept=".apk" onchange="updateLabel('apk-file', 'apk-label')">
         </div>
-
         <div class="form-group">
-            <label>Select Assembly (.dll)</label>
-            <label for="dll-file" class="file-upload-label" id="dll-label">Choose DLL (e.g., Assembly-CSharp.dll)...</label>
-            <input type="file" id="dll-file" accept=".dll" onchange="updateFileName('dll-file', 'dll-label')">
+            <label for="dll-file" class="file-upload-label" id="dll-label">Choose DLL File...</label>
+            <input type="file" id="dll-file" accept=".dll" onchange="updateLabel('dll-file', 'dll-label')">
         </div>
-
-        <button class="action-btn" onclick="patchAPK()">Patch & Rebuild APK</button>
-
-        <div id="patcher-output" class="output-box">Ready for action...</div>
+        <button class="action-btn" onclick="uploadAndPatch()">Patch & Download APK</button>
+        <div id="patcher-output" class="output-box">Ready...</div>
     </div>
 
-    <!-- Tab 2: PlayFab & Photon ID Extractor -->
+    <!-- Tab 2: Extractor -->
     <div id="extractor-tab" class="tab-content">
         <h2>PlayFab & Photon ID Extractor</h2>
-        <p class="description">Scan an APK package to look up hardcoded PlayFab Title IDs and Photon App IDs.</p>
-        
+        <p class="description">Scan target APK binaries and configuration segments for embedded cloud IDs.</p>
         <div class="form-group">
-            <label>Select Target APK File</label>
-            <label for="extract-apk" class="file-upload-label" id="extract-label">Choose APK...</label>
-            <input type="file" id="extract-apk" accept=".apk" onchange="updateFileName('extract-apk', 'extract-label')">
+            <label for="extract-apk" class="file-upload-label" id="extract-label">Choose APK File...</label>
+            <input type="file" id="extract-apk" accept=".apk" onchange="updateLabel('extract-apk', 'extract-label')">
         </div>
-
-        <button class="action-btn" onclick="extractIDs()">Extract IDs</button>
-
-        <div id="extractor-output" class="output-box">Waiting for APK input...</div>
+        <button class="action-btn" onclick="uploadAndExtract()">Extract IDs</button>
+        <div id="extractor-output" class="output-box">Waiting for APK...</div>
     </div>
 </div>
 
 <script>
     function switchTab(evt, tabId) {
-        const contents = document.querySelectorAll('.tab-content');
-        contents.forEach(content => content.classList.remove('active'));
-
-        const buttons = document.querySelectorAll('.tab-btn');
-        buttons.forEach(btn => btn.classList.remove('active'));
-
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         evt.currentTarget.classList.add('active');
     }
 
-    function updateFileName(inputId, labelId) {
+    function updateLabel(inputId, labelId) {
         const input = document.getElementById(inputId);
-        const label = document.getElementById(labelId);
-        if (input.files && input.files.length > 0) {
-            label.textContent = input.files[0].name;
-            label.style.borderColor = "var(--accent-color)";
-            label.style.color = "var(--text-color)";
+        if (input.files.length > 0) {
+            document.getElementById(labelId).textContent = input.files[0].name;
         }
     }
 
-    function patchAPK() {
-        const apkInput = document.getElementById('apk-file');
-        const dllInput = document.getElementById('dll-file');
+    async function uploadAndPatch() {
+        const apk = document.getElementById('apk-file').files[0];
+        const dll = document.getElementById('dll-file').files[0];
         const output = document.getElementById('patcher-output');
 
-        if (!apkInput.files.length || !dllInput.files.length) {
-            output.className = "output-box";
-            output.textContent = "[Error] Please select both an APK and a DLL file first.";
+        if (!apk || !dll) {
+            output.textContent = "Error: Please choose both files.";
             return;
         }
 
-        output.className = "output-box";
-        output.textContent = "Initializing patching sequence...\n- Decompressing APK structure...\n- Locating managed libs folder...\n- Injecting custom DLL...\n- Rebuilding and signing APK...";
+        output.textContent = "Uploading and injecting DLL into APK structure...";
+        const formData = new FormData();
+        formData.append('apk', apk);
+        formData.append('dll', dll);
 
-        setTimeout(() => {
-            output.className = "output-box success";
-            output.textContent = "[Success] APK successfully patched and signed!\nOutput ready: modified_game.apk";
-        }, 2000);
+        try {
+            const res = await fetch('/api/patch', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                output.textContent = "Success! Starting file download...";
+                window.location.href = data.download_url;
+            } else {
+                output.textContent = "Error: " + (data.error || "Unknown patch error");
+            }
+        } catch (err) {
+            output.textContent = "Request failed: " + err;
+        }
     }
 
-    function extractIDs() {
-        const apkInput = document.getElementById('extract-apk');
+    async function uploadAndExtract() {
+        const apk = document.getElementById('extract-apk').files[0];
         const output = document.getElementById('extractor-output');
 
-        if (!apkInput.files.length) {
-            output.className = "output-box";
-            output.textContent = "[Error] Please select an APK file to scan.";
+        if (!apk) {
+            output.textContent = "Error: Please choose an APK file.";
             return;
         }
 
-        output.className = "output-box";
-        output.textContent = "Scanning APK package assets...\n- Parsing globalgamemanagers / assets...\n- Unpacking managed assemblies...\n- Searching for PlayFab & Photon signatures...";
+        output.textContent = "Scanning internal APK assemblies and assets...";
+        const formData = new FormData();
+        formData.append('apk', apk);
 
-        setTimeout(() => {
-            output.className = "output-box success";
-            output.textContent = "[Scan Complete]\nPlayFab Title ID: AB12C\nPhoton Realtime ID: 12345678-abcd-1234-abcd-1234567890ab";
-        }, 2000);
+        try {
+            const res = await fetch('/api/extract', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                output.textContent = `[Scan Complete]\nPlayFab Title ID: ${data.playfab.join(', ')}\nPhoton Realtime ID: ${data.photon.join(', ')}`;
+            } else {
+                output.textContent = "Error: " + (data.error || "Unknown extract error");
+            }
+        } catch (err) {
+            output.textContent = "Request failed: " + err;
+        }
     }
 </script>
 
